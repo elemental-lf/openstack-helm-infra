@@ -61,7 +61,7 @@ limitations under the License.
       value: "{{ include "helm-toolkit.utils.joinListWithComma" $deps.jobs }}"
   {{- else }}
     - name: DEPENDENCY_JOBS_JSON
-      value: {{- toJson $deps.jobs | quote -}}
+      value: {{ toJson $deps.jobs | quote -}}
   {{- end -}}
 {{- end }}
     - name: DEPENDENCY_DAEMONSET
