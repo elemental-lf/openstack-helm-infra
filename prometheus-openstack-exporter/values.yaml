@@ -62,7 +62,7 @@ pod:
         timeout: 30
   resources:
     enabled: false
-    kube_state_metrics:
+    prometheus_openstack_exporter:
       requests:
         memory: "128Mi"
         cpu: "100m"
@@ -164,8 +164,8 @@ endpoints:
         username: prometheus-openstack-exporter
         password: password
         project_name: service
-        user_domain_name: default
-        project_domain_name: default
+        user_domain_name: service
+        project_domain_name: service
     hosts:
       default: keystone-api
       public: keystone

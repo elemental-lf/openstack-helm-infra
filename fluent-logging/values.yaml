@@ -103,7 +103,7 @@ conf:
   fluentbit:
     - service:
         header: service
-        Flush: 5
+        Flush: 30
         Daemon: Off
         Log_Level: info
         Parsers_File: parsers.conf
@@ -115,6 +115,9 @@ conf:
         Parser: docker
         DB: /var/log/flb_kube.db
         Mem_Buf_Limit: 5MB
+        DB.Sync: Normal
+        Buffer_Chunk_Size: 1M
+        Buffer_Max_Size: 1M
     - kube_filter:
         header: filter
         Name: kubernetes
@@ -334,8 +337,8 @@ pod:
     fluentd: 3
     prometheus_fluentd_exporter: 1
   resources:
+    enabled: false
     fluentbit:
-      enabled: false
       limits:
         memory: '400Mi'
         cpu: '400m'
@@ -343,7 +346,6 @@ pod:
         memory: '100Mi'
         cpu: '100m'
     fluentd:
-      enabled: false
       limits:
         memory: '1024Mi'
         cpu: '2000m'

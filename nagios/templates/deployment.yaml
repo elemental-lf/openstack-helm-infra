@@ -75,6 +75,9 @@ spec:
     metadata:
       labels:
 {{ tuple $envAll "nagios" "monitoring" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
+      annotations:
+        configmap-bin-hash: {{ tuple "configmap-bin.yaml" . | include "helm-toolkit.utils.hash" }}
+        configmap-etc-hash: {{ tuple "configmap-etc.yaml" . | include "helm-toolkit.utils.hash" }}
     spec:
       serviceAccountName: {{ $serviceAccountName }}
       nodeSelector:
@@ -98,10 +101,6 @@ spec:
             initialDelaySeconds: 20
             periodSeconds: 10
           env:
-            - name: NAGIOS_PORT
-              value: {{ tuple "nagios" "internal" "nagios" . | include "helm-toolkit.endpoints.endpoint_port_lookup" | quote }}
-            - name: LDAP_URL
-              value: {{ tuple "ldap" "default" "ldap" . | include "helm-toolkit.endpoints.keystone_endpoint_uri_lookup" | quote }}
             - name: NAGIOSADMIN_USER
               valueFrom:
                 secretKeyRef:
@@ -112,16 +111,6 @@ spec:
                 secretKeyRef:
                   name: {{ $nagiosUserSecret }}
                   key: NAGIOSADMIN_PASS
-            - name: BIND_DN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $nagiosUserSecret }}
-                  key: BIND_DN
-            - name: BIND_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $nagiosUserSecret }}
-                  key: BIND_PASSWORD
           volumeMounts:
             - name: nagios-bin
               mountPath: /tmp/apache.sh
@@ -131,23 +120,12 @@ spec:
               mountPath: /usr/local/apache2/conf/httpd.conf
               subPath: httpd.conf
               readOnly: true
-            - name: pod-etc-apache
-              mountPath: /usr/local/apache2/conf/sites-enabled
-            - name: nagios-etc
-              mountPath: /usr/local/apache2/conf/sites-enabled/nagios-host.conf
-              subPath: nagios-host.conf
-              readOnly: true
         - name: nagios
 {{ tuple $envAll "nagios" | include "helm-toolkit.snippets.image" | indent 10 }}
 {{ tuple $envAll $envAll.Values.pod.resources.nagios | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
           ports:
             - name: nagios
               containerPort: {{ tuple "nagios" "internal" "nagios" . | include "helm-toolkit.endpoints.endpoint_port_lookup" }}
-          readinessProbe:
-            tcpSocket:
-              port: {{ tuple "nagios" "internal" "nagios" . | include "helm-toolkit.endpoints.endpoint_port_lookup" }}
-            initialDelaySeconds: 20
-            periodSeconds: 10
           env:
             - name: PROMETHEUS_SERVICE
               value: {{ tuple "monitoring" "internal" "api" . | include "helm-toolkit.endpoints.host_and_port_endpoint_uri_lookup" }}
