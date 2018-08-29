@@ -30,6 +30,7 @@
         detach: true
         recreate: yes
         network_mode: host
+        user: root
         volumes:
           - /etc/kubernetes/admin.conf:/etc/kubernetes/admin.conf:ro
         env:
@@ -85,4 +86,4 @@
         http_proxy: "{{ proxy.http }}"
         https_proxy: "{{ proxy.https }}"
         no_proxy: "{{ proxy.noproxy }}"
-      command: helm init --client-only
+      command: helm init --client-only --skip-refresh

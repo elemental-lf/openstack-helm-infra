@@ -36,7 +36,7 @@ spec:
       serviceAccountName: {{ $serviceAccountName }}
       restartPolicy: OnFailure
       nodeSelector:
-        {{ .Values.labels.job.node_selector_key }}: {{ .Values.labels.job.node_selector_value }}
+        {{ .Values.labels.job.node_selector_key }}: {{ .Values.labels.job.node_selector_value | quote }}
       initContainers:
 {{ tuple $envAll "elasticsearch_template" list | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}
       containers:
@@ -78,8 +78,8 @@ spec:
             name: fluent-logging-bin
             defaultMode: 0555
         - name: fluent-logging-etc
-          configMap:
-            name: fluent-logging-etc
-            defaultMode: 0666
+          secret:
+            secretName: fluent-logging-etc
+            defaultMode: 0444
 {{ if $mounts_elasticsearch_template.volumes }}{{ toYaml $mounts_elasticsearch_template.volumes | indent 8 }}{{ end }}
 {{- end }}

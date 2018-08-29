@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Default values for prometheus-openstack-exporter.
+# Default values for process-exporter.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 images:
   tags:
-    prometheus_openstack_exporter: quay.io/attcomdev/prometheus-openstack-exporter:3231f14419f0c47547ce2551b7d884cd222104e6
+    process_exporter: docker.io/ncabatoff/process-exporter:0.2.11
     dep_check: quay.io/stackanetes/kubernetes-entrypoint:v0.3.1
     image_repo_sync: docker.io/docker:17.07.0
-    ks_user: docker.io/kolla/ubuntu-source-heat-engine:3.0.3
   pull_policy: IfNotPresent
   local_registry:
     active: false
@@ -30,7 +29,7 @@ images:
       - image_repo_sync
 
 labels:
-  openstack_exporter:
+  process_exporter:
     node_selector_key: openstack-control-plane
     node_selector_value: enabled
   job:
@@ -45,24 +44,27 @@ pod:
       topologyKey:
         default: kubernetes.io/hostname
   mounts:
-    prometheus_openstack_exporter:
-      prometheus_openstack_exporter:
+    process_exporter:
+      process_exporter:
       init_container: null
-  replicas:
-    prometheus_openstack_exporter: 1
   lifecycle:
     upgrades:
+      daemonsets:
+        pod_replacement_strategy: RollingUpdate
+        process_exporter:
+          enabled: true
+          min_ready_seconds: 0
       revision_history: 3
       pod_replacement_strategy: RollingUpdate
       rolling_update:
         max_unavailable: 1
         max_surge: 3
     termination_grace_period:
-      prometheus_openstack_exporter:
+      process_exporter:
         timeout: 30
   resources:
     enabled: false
-    prometheus_openstack_exporter:
+    process_exporter:
       requests:
         memory: "128Mi"
         cpu: "100m"
@@ -77,20 +79,13 @@ pod:
         limits:
           memory: "1024Mi"
           cpu: "2000m"
-      ks_user:
-        requests:
-          memory: "128Mi"
-          cpu: "100m"
-        limits:
-          memory: "1024Mi"
-          cpu: "2000m"
 
 dependencies:
   dynamic:
     common:
       local_image_registry:
         jobs:
-          - prometheus-openstack-exporter-image-repo-sync
+          - process-exporter-image-repo-sync
         services:
           - endpoint: node
             service: local_image_registry
@@ -99,27 +94,14 @@ dependencies:
       services:
         - endpoint: internal
           service: local_image_registry
-    ks_user:
-      services:
-        - endpoint: internal
-          service: identity
-    prometheus_openstack_exporter:
-      jobs:
-        - prometheus-openstack-exporter-ks-user
-      services:
-        - endpoint: internal
-          service: identity
+    process_exporter:
+      services: null
 
-conf:
-  prometheus_openstack_exporter:
-    OS_POLLING_INTERVAL: 30
-    TIMEOUT_SECONDS: 20
-    OS_RETRIES: 1
-
-secrets:
-  identity:
-    admin: prometheus-openstack-exporter-keystone-admin
-    user: prometheus-openstack-exporter-keystone-user
+monitoring:
+  prometheus:
+    enabled: true
+    process_exporter:
+      scrape: true
 
 endpoints:
   cluster_domain_suffix: cluster.local
@@ -135,10 +117,10 @@ endpoints:
     port:
       registry:
         node: 5000
-  prometheus_openstack_exporter:
+  process_exporter_metrics:
     namespace: null
     hosts:
-      default: openstack-metrics
+      default: process-exporter
     host_fqdn_override:
       default: null
     path:
@@ -146,54 +128,14 @@ endpoints:
     scheme:
       default: 'http'
     port:
-      exporter:
-        default: 9103
-  identity:
-    name: keystone
-    auth:
-      admin:
-        region_name: RegionOne
-        username: admin
-        password: password
-        project_name: admin
-        user_domain_name: default
-        project_domain_name: default
-      user:
-        role: admin
-        region_name: RegionOne
-        username: prometheus-openstack-exporter
-        password: password
-        project_name: service
-        user_domain_name: default
-        project_domain_name: default
-    hosts:
-      default: keystone
-      internal: keystone-api
-    host_fqdn_override:
-      default: null
-    path:
-      default: /v3
-    scheme:
-      default: 'http'
-    port:
-      api:
-        default: 80
-        internal: 5000
-
-monitoring:
-  prometheus:
-    enabled: true
-    openstack_exporter:
-      scrape: true
-
-network:
-  openstack_metrics_exporter:
-    port: 9103
+      metrics:
+        default: 9256
 
 manifests:
   configmap_bin: true
-  deployment: true
+  daemonset: true
   job_image_repo_sync: true
-  job_ks_user: true
-  secret_keystone: true
   service: true
+
+conf:
+  processes: dockerd,kubelet,kube-proxy,bgsagent,bgscollect,bgssd

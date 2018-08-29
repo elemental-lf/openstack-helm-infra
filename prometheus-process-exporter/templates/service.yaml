@@ -16,28 +16,25 @@ limitations under the License.
 
 {{- if .Values.manifests.service }}
 {{- $envAll := . }}
-{{- $prometheus_annotations := $envAll.Values.monitoring.prometheus.prometheus }}
+{{- $prometheus_annotations := $envAll.Values.monitoring.prometheus.process_exporter }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ tuple "monitoring" "internal" . | include "helm-toolkit.endpoints.hostname_short_endpoint_lookup" }}
+  name: {{ tuple "process_exporter_metrics" "internal" . | include "helm-toolkit.endpoints.hostname_short_endpoint_lookup" }}
   labels:
-{{ tuple $envAll "prometheus" "metrics" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
+{{ tuple $envAll "process_exporter" "metrics" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
   annotations:
 {{- if .Values.monitoring.prometheus.enabled }}
 {{ tuple $prometheus_annotations | include "helm-toolkit.snippets.prometheus_service_annotations" | indent 4 }}
 {{- end }}
 spec:
+  type: ClusterIP
+  clusterIP: None
   ports:
-  - name: http
-    port: {{ tuple "monitoring" "internal" "http" . | include "helm-toolkit.endpoints.endpoint_port_lookup" }}
-    {{ if .Values.network.prometheus.node_port.enabled }}
-    nodePort: {{ .Values.network.prometheus.node_port.port }}
-    {{ end }}
+  - name: metrics
+    port: {{ tuple "process_exporter_metrics" "internal" "metrics" . | include "helm-toolkit.endpoints.endpoint_port_lookup" }}
+    targetPort: {{ tuple "process_exporter_metrics" "internal" "metrics" . | include "helm-toolkit.endpoints.endpoint_port_lookup" }}
   selector:
-{{ tuple $envAll "prometheus" "api" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
-  {{ if .Values.network.prometheus.node_port.enabled }}
-  type: NodePort
-  {{ end }}
+{{ tuple $envAll "process_exporter" "metrics" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
 {{- end }}

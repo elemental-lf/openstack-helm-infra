@@ -44,7 +44,7 @@ spec:
     spec:
       serviceAccountName: {{ $serviceAccountName }}
       nodeSelector:
-        {{ .Values.labels.grafana.node_selector_key }}: {{ .Values.labels.grafana.node_selector_value }}
+        {{ .Values.labels.grafana.node_selector_key }}: {{ .Values.labels.grafana.node_selector_value | quote }}
       initContainers:
 {{ tuple $envAll "grafana" list | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container"  | indent 8 }}
       containers:
@@ -115,8 +115,8 @@ spec:
             name: grafana-bin
             defaultMode: 0555
         - name: grafana-etc
-          configMap:
-            name: grafana-etc
+          secret:
+            secretName: grafana-etc
             defaultMode: 0444
         - name: data
           emptyDir: {}

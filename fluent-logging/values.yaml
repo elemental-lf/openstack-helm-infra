@@ -23,8 +23,10 @@ labels:
     node_selector_key: openstack-control-plane
     node_selector_value: enabled
   fluentbit:
+    #(NOTE:seungkyua): when tolerations is true, nodeSelector will be disabled.
     node_selector_key: openstack-control-plane
     node_selector_value: enabled
+    tolerations: false
   prometheus_fluentd_exporter:
     node_selector_key: openstack-control-plane
     node_selector_value: enabled
@@ -35,7 +37,7 @@ labels:
 images:
   tags:
     fluentbit: docker.io/fluent/fluent-bit:0.12.14
-    fluentd: docker.io/kolla/ubuntu-source-fluentd:ocata
+    fluentd: docker.io/fluent/fluentd-kubernetes-daemonset:v1.2-debian-elasticsearch
     prometheus_fluentd_exporter: docker.io/srwilkers/fluentd_exporter:v0.1
     dep_check: quay.io/stackanetes/kubernetes-entrypoint:v0.3.1
     helm_tests: docker.io/kolla/ubuntu-source-heat-engine:3.0.3
@@ -118,6 +120,10 @@ conf:
         DB.Sync: Normal
         Buffer_Chunk_Size: 1M
         Buffer_Max_Size: 1M
+    - drop_fluentd_logs:
+        header: output
+        Name: "null"
+        Match: "**.fluentd**"
     - kube_filter:
         header: filter
         Name: kubernetes
@@ -148,6 +154,10 @@ conf:
         type: forward
         port: "#{ENV['FLUENTD_PORT']}"
         bind: 0.0.0.0
+    - filter_fluentd_logs:
+        header: match
+        expression: "fluent.**"
+        type: "null"
     - elasticsearch:
         header: match
         type: elasticsearch

@@ -28,13 +28,13 @@ RUN sed -i \
         /etc/apt/sources.list ;\
     echo "APT::Get::AllowUnauthenticated \"${ALLOW_UNAUTHENTICATED}\";" > /etc/apt/apt.conf.d/allow-unathenticated
 
-ARG KUBE_VERSION="v1.10.5"
+ARG KUBE_VERSION="v1.10.7"
 ENV KUBE_VERSION ${KUBE_VERSION}
 
 ARG CNI_VERSION="v0.6.0"
 ENV CNI_VERSION ${CNI_VERSION}
 
-ARG HELM_VERSION="v2.9.1"
+ARG HELM_VERSION="v2.10.0"
 ENV HELM_VERSION ${HELM_VERSION}
 
 ARG CHARTS="calico,flannel,tiller,kube-dns,kubernetes-keystone-webhook"

@@ -14,16 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
-{{- if .Values.manifests.configmap_etc }}
-{{- $envAll := . }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kibana-etc
-type: Opaque
-data:
-  kibana.yml: {{ toYaml .Values.conf.kibana | b64enc }}
-#NOTE(portdirect): this must be last, to work round helm ~2.7 bug.
-{{- include "helm-toolkit.snippets.values_template_renderer" (dict "envAll" $envAll "template" .Values.conf.httpd "key" "httpd.conf" "format" "Secret") | indent 2 }}
+{{- if and .Values.manifests.job_image_repo_sync .Values.images.local_registry.active }}
+{{- $imageRepoSyncJob := dict "envAll" . "serviceName" "process-exporter" -}}
+{{ $imageRepoSyncJob | include "helm-toolkit.manifests.job_image_repo_sync" }}
 {{- end }}

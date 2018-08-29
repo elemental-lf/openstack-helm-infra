@@ -16,15 +16,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
-set -ex
+set -ev
+
 COMMAND="${@:-start}"
 
 function start () {
-  exec fluentd -c /fluentd/etc/fluent.conf
+
+  if [ -f /etc/apache2/envvars ]; then
+     # Loading Apache2 ENV variables
+     source /etc/httpd/apache2/envvars
+  fi
+  # Apache gets grumpy about PID files pre-existing
+  rm -f /etc/httpd/logs/httpd.pid
+
+  if [ -f /usr/local/apache2/conf/.htpasswd ]; then
+    htpasswd -b /usr/local/apache2/conf/.htpasswd "$PROMETHEUS_ADMIN_USERNAME" "$PROMETHEUS_ADMIN_PASSWORD"
+  else
+    htpasswd -cb /usr/local/apache2/conf/.htpasswd "$PROMETHEUS_ADMIN_USERNAME" "$PROMETHEUS_ADMIN_PASSWORD"
+  fi
+
+  #Launch Apache on Foreground
+  exec httpd -DFOREGROUND
 }
 
 function stop () {
-  kill -TERM 1
+  apachectl -k graceful-stop
 }
 
 $COMMAND
