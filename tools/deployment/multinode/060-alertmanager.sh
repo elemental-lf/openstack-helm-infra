@@ -17,15 +17,14 @@
 set -xe
 
 #NOTE: Lint and package chart
-make alertmanager
+make prometheus-alertmanager
 
 #NOTE: Deploy command
 helm upgrade --install alertmanager ./prometheus-alertmanager \
-    --namespace=openstack \
-    --set storage.storage_class=openstack-helm-lma-nfs
+    --namespace=osh-infra
 
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh openstack
+./tools/deployment/common/wait-for-pods.sh osh-infra
 
 #NOTE: Validate Deployment info
 helm status alertmanager

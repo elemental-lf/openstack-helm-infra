@@ -21,9 +21,6 @@ make elasticsearch
 
 #NOTE: Deploy command
 tee /tmp/elasticsearch.yaml << EOF
-storage:
-  elasticsearch:
-    storage_class: openstack-helm-lma-nfs
 conf:
   elasticsearch:
     env:
@@ -33,11 +30,11 @@ monitoring:
     enabled: true
 EOF
 helm upgrade --install elasticsearch ./elasticsearch \
-    --namespace=openstack \
+    --namespace=osh-infra \
     --values=/tmp/elasticsearch.yaml
 
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh openstack
+./tools/deployment/common/wait-for-pods.sh osh-infra
 
 #NOTE: Validate Deployment info
 helm status elasticsearch

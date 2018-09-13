@@ -17,25 +17,37 @@
     - name: Deploy Registry NFS, Redis, and Docker Registry
       shell: |
         set -xe;
-        ./tools/deployment/developer/010-deploy-docker-registry.sh
+        ./tools/deployment/multinode/010-deploy-docker-registry.sh
       args:
         chdir: "{{ zuul.project.src_dir }}"
-    - name: Deploy Cluster and Namespace Ingress
+    - name: Deploy Cluster and Namespace Ingresses
       shell: |
         set -xe;
-        ./tools/deployment/developer/020-ingress.sh
+        ./tools/deployment/multinode/020-ingress.sh
       args:
         chdir: "{{ zuul.project.src_dir }}"
-    - name: Deploy NFS for Logging, Monitoring and Alerting Components
+    - name: Deploy Ceph
       shell: |
         set -xe;
-        ./tools/deployment/developer/030-lma-nfs-provisioner.sh
+        ./tools/deployment/multinode/030-ceph.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+    - name: Deploy Ceph NS Activate
+      shell: |
+        set -xe;
+        ./tools/deployment/multinode/035-ceph-ns-activate.sh
       args:
         chdir: "{{ zuul.project.src_dir }}"
     - name: Deploy LDAP
       shell: |
         set -xe;
         ./tools/deployment/multinode/040-ldap.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+    - name: Deploy MariaDB
+      shell: |
+        set -xe;
+        ./tools/deployment/multinode/045-mariadb.sh
       args:
         chdir: "{{ zuul.project.src_dir }}"
     - name: Deploy Prometheus
@@ -60,6 +72,12 @@
       shell: |
         set -xe;
         ./tools/deployment/multinode/080-node-exporter.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+    - name: Deploy Process Exporter
+      shell: |
+        set -xe;
+        ./tools/deployment/multinode/085-process-exporter.sh
       args:
         chdir: "{{ zuul.project.src_dir }}"
     - name: Deploy Prometheus OpenStack Exporter

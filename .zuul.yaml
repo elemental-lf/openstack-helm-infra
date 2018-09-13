@@ -13,6 +13,8 @@
 # limitations under the License.
 
 - project:
+    templates:
+      - publish-openstack-docs-pti
     check:
       jobs:
         - openstack-helm-infra-linter
@@ -26,7 +28,23 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - openstack-helm-infra-dev-deploy:
+        - openstack-helm-infra-dev-deploy-ceph:
+            # NOTE(srwilkers): Changing the dev-deploy-ceph job to nonvoting
+            # until we can agree on the proper services to deploy with this job
+            voting: false
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+        - openstack-helm-infra-dev-deploy-nfs:
+            #NOTE(srwilkers): Changing the dev-deploy-nfs job to nonvoting until
+            # we can agree on the proper services to deploy with this job
+            voting: false
+            irrelevant-files:
+              - ^.*\.rst$
+              - ^doc/.*$
+              - ^releasenotes/.*$
+        - openstack-helm-infra-openstack-support:
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
@@ -49,7 +67,7 @@
               - ^.*\.rst$
               - ^doc/.*$
               - ^releasenotes/.*$
-        - openstack-helm-infra-dev-deploy:
+        - openstack-helm-infra-openstack-support:
             irrelevant-files:
               - ^.*\.rst$
               - ^doc/.*$
@@ -212,7 +230,7 @@
 
 - job:
     name: openstack-helm-infra
-    timeout: 3600
+    timeout: 7200
     pre-run:
       - playbooks/osh-infra-upgrade-host.yaml
       - playbooks/osh-infra-deploy-docker.yaml
@@ -237,10 +255,26 @@
     nodeset: openstack-helm-fedora
 
 - job:
-    name: openstack-helm-infra-dev-deploy
+    name: openstack-helm-infra-dev-deploy-ceph
     timeout: 7200
     pre-run: playbooks/osh-infra-upgrade-host.yaml
-    run: playbooks/osh-infra-dev-deploy.yaml
+    run: playbooks/osh-infra-dev-deploy-ceph.yaml
+    post-run: playbooks/osh-infra-collect-logs.yaml
+    nodeset: openstack-helm-single-node
+
+- job:
+    name: openstack-helm-infra-dev-deploy-nfs
+    timeout: 7200
+    pre-run: playbooks/osh-infra-upgrade-host.yaml
+    run: playbooks/osh-infra-dev-deploy-nfs.yaml
+    post-run: playbooks/osh-infra-collect-logs.yaml
+    nodeset: openstack-helm-single-node
+
+- job:
+    name: openstack-helm-infra-openstack-support
+    timeout: 7200
+    pre-run: playbooks/osh-infra-upgrade-host.yaml
+    run: playbooks/osh-infra-openstack-support.yaml
     post-run: playbooks/osh-infra-collect-logs.yaml
     nodeset: openstack-helm-single-node
 
