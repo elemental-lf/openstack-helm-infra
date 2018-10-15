@@ -29,6 +29,8 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: libvirt
+  annotations:
+    {{ tuple $envAll | include "helm-toolkit.snippets.release_uuid" }}
   labels:
 {{ tuple $envAll "libvirt" "libvirt" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
 spec:
@@ -49,6 +51,7 @@ spec:
         {{ .Values.labels.agent.libvirt.node_selector_key }}: {{ .Values.labels.agent.libvirt.node_selector_value }}
       hostNetwork: true
       hostPID: true
+      hostIPC: true
       dnsPolicy: ClusterFirstWithHostNet
       initContainers:
 {{ tuple $envAll "pod_dependency" $mounts_libvirt_init | include "helm-toolkit.snippets.kubernetes_entrypoint_init_container" | indent 8 }}

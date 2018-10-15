@@ -135,7 +135,7 @@ Alternatively, this step can be performed by running the script directly:
 Deploy Process Exporter
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../../../tools/deployment/developer/ceph/085-process-exporter.sh
+.. literalinclude:: ../../../../tools/deployment/developer/ceph/090-process-exporter.sh
     :language: shell
     :lines: 1,17-
 
@@ -143,20 +143,7 @@ Alternatively, this step can be performed by running the script directly:
 
 .. code-block:: shell
 
-  ./tools/deployment/developer/ceph/085-process-exporter.sh
-
-Deploy OpenStack Exporter
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. literalinclude:: ../../../../tools/deployment/developer/ceph/090-openstack-exporter.sh
-    :language: shell
-    :lines: 1,17-
-
-Alternatively, this step can be performed by running the script directly:
-
-.. code-block:: shell
-
-  ./tools/deployment/developer/ceph/090-openstack-exporter.sh
+  ./tools/deployment/developer/ceph/090-process-exporter.sh
 
 Deploy Grafana
 ^^^^^^^^^^^^^^
@@ -183,6 +170,20 @@ Alternatively, this step can be performed by running the script directly:
 .. code-block:: shell
 
   ./tools/deployment/developer/ceph/110-nagios.sh
+
+Deploy Rados Gateway for OSH-Infra
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: ../../../../tools/deployment/developer/ceph/115-radosgw-osh-infra.sh
+    :language: shell
+    :lines: 1,17-
+
+Alternatively, this step can be performed by running the script directly:
+
+.. code-block:: shell
+
+  ./tools/deployment/developer/ceph/115-radosgw-osh-infra.sh
+
 
 Deploy Elasticsearch
 ^^^^^^^^^^^^^^^^^^^^

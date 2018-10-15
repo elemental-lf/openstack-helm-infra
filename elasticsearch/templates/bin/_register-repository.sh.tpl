@@ -15,15 +15,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
+{{ $envAll := . }}
+
 set -ex
 
-exec curl -K- <<< "--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}" \
-  "${ELASTICSEARCH_ENDPOINT}/_snapshot/${REPO_NAME}" \
+{{ range $repository := $envAll.Values.conf.elasticsearch.snapshots.repositories }}
+curl -K- <<< "--user ${ELASTICSEARCH_USERNAME}:${ELASTICSEARCH_PASSWORD}" \
+  "${ELASTICSEARCH_HOST}/_snapshot/{{$repository.name}}" \
   -H 'Content-Type: application/json' -d'
   {
-    "type": "'"$REPO_TYPE"'",
+    "type": "s3",
     "settings": {
-      "location": "'"$REPO_LOCATION"'",
-      "compress": true
+      "endpoint": "'"$RGW_HOST"'",
+      "protocol": "http",
+      "bucket": "'"$S3_BUCKET"'",
+      "access_key": "'"$S3_ACCESS_KEY"'",
+      "secret_key": "'"$S3_SECRET_KEY"'"
     }
   }'
+{{ end }}
